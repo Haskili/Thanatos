@@ -24,3 +24,12 @@ hummer_links = [
 
 prius_link = "https://www.sfgate.com/opinion/editorials/article/The-Hummer-vs-the-Prius-2557425.php"
 tesla_link = "https://247wallst.com/investing/2021/01/16/gm-shares-outperform-teslas-this-year/"
+
+honk_links = [
+    "https://i.redd.it/x9dc72qyjxa31.jpg",
+    "https://dublinohiousa.gov/dev/dev/wp-content/uploads/2018/08/nature-goose.jpg",
+    "https://gogeesego.com/wp-content/uploads/why-are-geese-aggressive-1920x550.jpg",
+    "https://varmentguard.com/uploads/permanent/f4146f3ef9ea4fe0ad999cfb49619eb1.png",
+    "https://i.redd.it/fcknbn4u65x41.jpg",
+    "https://tenor.com/view/goose-honk-inhale-inhales-untitled-gif-16237480"
+]

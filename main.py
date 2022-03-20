@@ -17,7 +17,8 @@ from environment_variables import (
 from links import (
     hummer_links,
     tesla_link,
-    prius_link
+    prius_link,
+    honk_links
 )
 
 from compliments import (
@@ -467,6 +468,36 @@ async def reddit(ctx):
     response = f"> {reddit_queue[-1]['title']}\n\n{reddit_queue[-1]['url']}"
     reddit_queue.pop()
     await ctx.reply(response)
+
+
+@bot.command()
+async def honk(ctx):
+    """
+    Honk
+
+    Arguments:
+            N/A
+
+    Returns:
+            N/A
+
+    Raises:
+            N/A
+    """
+
+    # Setup a random picture response
+    response = random.choice(honk_links)
+
+    # Make sure they know he's angry
+    emoji = '\N{ANGER SYMBOL}'
+    await ctx.message.add_reaction(emoji)
+
+    # Make sure they REALLLY know he's angry
+    emoji = '\N{SWAN}'
+    await ctx.message.add_reaction(emoji)
+
+    # Release the kraken
+    await ctx.send(f"**HONK**\n {response}")
 
 
 
