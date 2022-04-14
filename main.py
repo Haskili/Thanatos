@@ -5,6 +5,8 @@ import re
 import requests
 
 from discord import Intents
+from discord import Colour
+from discord import Embed
 from discord.ext import commands
 from discord.utils import get
 
@@ -47,11 +49,18 @@ if OPTION_FLAGS["REMOVE_HELP"]:
 # Initialize the required queue(s)
 reddit_queue = []
 
+# Initialize synchronization lock(s)
+lock = asyncio.Lock()
+
 
 
 ##################################
 #      AUXILLIARY FUNCTIONS      #
 ##################################
+
+def administrator(roles):
+    return any([role.permissions.administrator for role in roles])
+
 
 async def handle_EV(ctx, message):
     """
@@ -186,6 +195,20 @@ async def on_message(message):
     # Disregard input made by self
     if message.author == bot.user:
         return
+
+    # Check for message triggering a status change
+    if random.randint(0, 10) > 8:
+        selection = random.choice([
+            "with the fabric of reality",
+            "the souls of mortals",
+            "with fire",
+            "with something he shouldn't",
+            "Untitled Goose Game",
+            "with explosions",
+            "I use Arch BTW",
+            "👍 Hitchiker Simulator 2022",
+            f"with {message.author.name}"
+        ])
 
     # Check for string input in the message
     # (e.g. not a raw media type alone)
@@ -463,11 +486,21 @@ async def reddit(ctx):
         )
         random.shuffle(reddit_queue)
 
+    # Setup the base message
+    embed = Embed(
+        title = f"{reddit_queue[-1]['title']}",
+        url = reddit_queue[-1]['url'],
+        colour = Colour.from_rgb(*[random.randint(0, 255) for _ in range(3)])
+    )
+
+    # Setup the extra options for the message
+    embed.set_footer(text = f"-- r/memes")
+    embed.set_image(url = reddit_queue[-1]['url'])
+
     # Prepare the response and then pop from the queue
-    # before sending the information to the calling user
-    response = f"> {reddit_queue[-1]['title']}\n\n{reddit_queue[-1]['url']}"
+    # before sending the message to the calling user
     reddit_queue.pop()
-    await ctx.reply(response)
+    await ctx.reply(embed = embed)
 
 
 @bot.command()
@@ -498,6 +531,160 @@ async def honk(ctx):
 
     # Release the kraken
     await ctx.send(f"**HONK**\n {response}")
+
+
+@bot.command()
+async def uwu(ctx):
+    """
+    Oh no...
+
+    Arguments:
+            N/A
+
+    Returns:
+            N/A
+
+    Raises:
+            N/A
+    """
+
+    # Choose a random response
+    response = random.choice([
+            "I\'m going to be 100\% upset at you for that.",
+            "Do you wish to invoke the wrath of Thanatos, mortal?!",
+            "Silence, mortal!",
+            "No.",
+            "Could you just *not* do that?",
+            "Stop that, you stop that this instant!",
+            "DO NOT. DO THIS.",
+            "Why must you bring \'him\' back?!",
+            "Oh no...he\'s back,",
+            "Here he comes again...",
+            "Ugh.",
+            "No...no no no. *No*.",
+            "Why are you like this, mortal?",
+            "How DARE you?"
+    ])
+
+    # Choose a random emoji
+    emoji = random.choice([
+        '\N{THUMBS DOWN SIGN}', 
+        '\N{ANGER SYMBOL}'
+    ])
+
+    # Respond to the user command call appropriately
+    await ctx.message.add_reaction(emoji)
+    await ctx.message.reply(response)
+
+
+@bot.command()
+async def RGB(ctx):
+    """
+    Briefly flash the colours in the RGB role of the server
+
+    Arguments:
+            N/A
+
+    Returns:
+            N/A
+
+    Raises:
+            N/A
+    """
+
+    # Using the RGB call lock to handle multiple callers
+    async with lock:
+
+        # Get the server's RGB role if it exists
+        role = get(ctx.guild.roles, name = "RGB")
+        if role == None:
+            return
+
+        # Only proceed if the caller is an admin or has the RGB role
+        if role in ctx.author.roles or administrator(ctx.author.roles):
+            default = tuple(value for value in (role.colour).to_rgb())
+
+            for i in range(0, 20):
+
+                # Get the new RGB value for the role
+                colour = tuple(random.randint(0, 255) for _ in range(3))
+
+                # Re-assign the role's colour and sleep for a brief period
+                await role.edit(colour = Colour.from_rgb(*colour))
+                await asyncio.sleep(1)
+
+            # Re-apply the old colour to the role
+            await role.edit(colour = Colour.from_rgb(*default))
+
+
+@bot.command()
+async def set_activity(ctx):
+    """
+    Briefly flash the colours in the RGB role of the server
+
+    Arguments:
+            (message): A string message to display as the activity
+
+    Returns:
+            N/A
+
+    Raises:
+            N/A
+    """
+
+    # Check for caller authorization
+    if (ctx.author.id != DISCORD["OWNER_ID"]):
+        return
+
+    # Get any additional arguments from the command caller
+    if len(ctx.message.content) > 13:
+        arguments = ctx.message.content[14:]
+    else:
+        arguments = ""
+
+    await bot.change_presence(activity = discord.Game(name = arguments))
+
+
+
+@bot.command()
+async def announcement(ctx):
+    """
+    Change the activity setting of the bot
+
+    Arguments:
+            (message): A post to publish in the announcements channel
+
+    Returns:
+            N/A
+
+    Raises:
+            N/A
+    """
+
+    # Check for caller authorization
+    if (ctx.author.id != DISCORD["OWNER_ID"] and not administrator(ctx.author.roles)):
+        return
+
+    # Get the server's RGB role if it exists
+    channel = get(ctx.guild.channels, name = "announcements")
+    if channel == None:
+        return
+
+    # Setup the base message
+    embed = Embed(
+        description = f"{ctx.message.content[14:]}",
+        colour = Colour.from_rgb(*[random.randint(0, 255) for _ in range(3)])
+    )
+
+    # Setup the optional flaires for the message
+    embed.set_footer(text = "-- Sent via Thanatos")
+    embed.set_author(
+        name = ctx.message.author.name, 
+        icon_url = ctx.author.avatar_url
+    )
+
+    # Send the message
+    await channel.send(embed = embed)
 
 
 
